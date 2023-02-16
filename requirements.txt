@@ -1,0 +1,9 @@
+Flask
+Flask-SQLAlchemy
+flask-marshmallow
+Flask-Cors
+marshmallow-sqlalchemy
+PyJWT
+pymysql
+numpy
+scipy
