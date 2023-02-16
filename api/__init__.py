@@ -1,7 +1,9 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from dotenv import load_dotenv
 from flask_cors import CORS
+import os
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -9,8 +11,9 @@ ma = Marshmallow()
 def init_app():
   app = Flask("calculator-api")
   CORS(app)
-  app.config["SECURITY_KEY"] = "flaskcalculatorwebapp" # need change
-  app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://pytecha:xftgvcxc@pytecha.mysql.pythonanywhere-services.com/pytecha$codec"
+  load_dotenv()
+  app.config["SECURITY_KEY"] = os.getenv("SECURITY_KEY")
+  app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DB_URI")
   app.config["SQLALCHEMY_POOL_RECYCLE"] = 300
   app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
   app.config["SQLALCHEMY_COMMIT_ON_TEARDOWN"] = True
