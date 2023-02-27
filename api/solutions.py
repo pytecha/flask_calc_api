@@ -3,7 +3,7 @@ from .mathlab.functions import solver, deviation,\
   regression, to_frac, to_time, formater
 from .mathlab.constants import REG_FNS_AND_TEMPS
 from .mathlab.utils import Unit
-from .auth import token_required
+# from .auth import token_required
 
 solutions = Blueprint("solutions", __name__)
 
@@ -19,7 +19,7 @@ def main():
   })
 
 @solutions.route("/deviation", methods=["POST"])
-@token_required()
+# @token_required()
 def std_deviation():
   expr, unit, stats, *_ = get_body(request)
   return jsonify({
@@ -30,7 +30,7 @@ def std_deviation():
   })
 
 @solutions.route("/regression", methods=["POST"])
-@token_required()
+# @token_required()
 def xy_regression():
   expr, unit, stats, *_ = get_body(request)
   kind = request.json.get("kind")
@@ -49,7 +49,7 @@ def xy_regression():
   })
 
 @solutions.route("/conversion", methods=["POST"])
-@token_required()
+# @token_required()
 def conversion():
   kind = request.json.get("kind")
   expr = request.json.get("expression")

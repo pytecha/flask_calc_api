@@ -11,7 +11,8 @@ config = dotenv_values("/home/pytecha/flask_calc_api/.env")
 
 def init_app():
   app = Flask("calculator-api")
-  CORS(app)
+  CORS(app, resources={r"/api/solutions/*": {"origins": ["http://localhost:3000", "https://pytecha.pythonanywhere.com"]}})
+
   app.config["SECURITY_KEY"] = config["SECURITY_KEY"]
   app.config["SQLALCHEMY_DATABASE_URI"] = config["DB_URI"]
   app.config["SQLALCHEMY_POOL_RECYCLE"] = 300

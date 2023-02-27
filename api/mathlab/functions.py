@@ -28,8 +28,8 @@ def regression(x, y, regf, ty, tx):
     **popt, "r":coefr, **deviation(x, in_reg=True),
     **deviation(y, "y", True), "sumxy": np.sum(x*y).item(),
     "sumtrx": np.sum(x**3).item(), "sumtwxy": np.sum(x**2*y).item(),
-    "sumfrx": np.sum(x**4).item(), "xpred": f"@xpred({tx.substitute(popt)})",
-    "ypred": f"@ypred({ty.substitute(popt)})"
+    "sumfrx": np.sum(x**4).item(), "xpred": f"@xpred{tx.substitute(popt)}",
+    "ypred": f"@ypred{ty.substitute(popt)}"
   }
 
 def quad(a, b, c):
@@ -154,9 +154,7 @@ def log(x):
 @pol_rec()
 def to_frac(x):
   f = Fraction(x).limit_denominator()
-  if (a:=f.numerator) > (b:=f.denominator):
-    return f"{a//b}/{a%b}/{b}"
-  return f"{a}/{b}"
+  return f"{f.numerator}/{f.denominator}"
   
 def to_time(x):
   hrs = int(x)
@@ -170,7 +168,7 @@ def to_time(x):
     mins += 1; secs = 0
   if mins == 60:
     hrs += 1; mins = 0
-  return f"{hrs}:{mins}:{secs}:{cns}"
+  return f"{hrs}⁰{mins}⁰{secs}.{cns}"
 
 def sqrt(x):
   return x**(1/2)
@@ -197,8 +195,8 @@ def frac(a, b, c=None):
   return -(abs(a)+b/c) if c and a < 0 else\
     a+b/c if c else a/b
 
-def deci(h, m=0, s=0, c=0):
-  decimal = abs(m/60)+abs(s/3600)+abs(c/360000)
+def deci(h, m=0, s=0):
+  decimal = abs(m/60)+abs(s/3600)
   return -(abs(h)+decimal) if h < 0 else h+decimal
   
 def polar(x, y):
@@ -250,13 +248,6 @@ def tokens_analyzer(expression):
     
     if direction == "bi":
       if arg1 in errors: raise ExpressionError
-      if func == "frac":
-        try:
-          arg3 = get_right_arg(right, 0, len(right))
-        except  (EmptyArg, UnmatchedArg, MissingBound): arg3 = "empty"
-        if arg3 != "empty":
-          right = right[slice(len(arg3), None)]
-          return tokens_analyzer(f"{left}{func}({arg1},{arg2}, {arg3}){right}")
       return tokens_analyzer(f"{left}{func}({arg1},{arg2}){right}")
     
     elif direction == "bi-const":
@@ -264,7 +255,7 @@ def tokens_analyzer(expression):
       arg1 = '' if arg1 in errors[:2] else f'{arg1}*'
       return tokens_analyzer(f"{left}{arg1}{func}({arg2}){right}")
   else:
-    expression = get_multi_args(expression, "deci", DC)
+    expression = get_multi_args(expression, MA)
     replacer = lambda x: "" if (match:=x.group(0)) in "#" else f"{match[0]}*("
     return re.sub(r"(((?<!\w)\w\()|([0-9]+\()|(\)\()|#)", replacer, expression)
 
@@ -305,7 +296,7 @@ def get_right_arg(expression, start, end):
     start += 1
   return "".join(chars)
 
-def get_multi_args(expression, target, regex):
+def get_multi_args(expression, regex):
   if match:=regex.search(expression):
     start, end = match.span()
     args, chars, num = [], [], (end - start)//5
@@ -318,13 +309,16 @@ def get_multi_args(expression, target, regex):
         num -= 1; end += 1
         continue
       chars.append(char); end += 1
-    argc = len(args)
-    if ((argc < 2 or argc > 3) and target in "frac") or\
-      (argc < 1 or argc > 4): raise Exception("unmatched args")
+    func = match.group(1).strip("(")
+    if (argc:=len(args)) < 1 or (argc > 2 and func == "frac") or argc > 3:
+      raise Exception("unmatched args")
     left = expression[slice(0, start)]
     right = expression[slice(end, None)]
-    expression = f'{left}{target}#({",".join(args)}){right}'
-    return get_multi_args(expression, target, regex)
+    if func == "frac":
+      args.append(arg:=get_right_arg(right, 0, len(right)))
+      right = right[slice(len(arg), None)]
+    expression = f'{left}{func}#({",".join(args)}){right}'
+    return get_multi_args(expression, regex)
   else:
     return expression
 

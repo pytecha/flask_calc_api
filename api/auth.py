@@ -27,12 +27,7 @@ def token_required(roles=["basic"]):
           if role not in user_roles: abort(403)
       except Exception: abort(400)
 
-      try:
-        return f(*args, **kwargs)
-      except ValueError:
-        abort(500, description="Math Error")
-      except Exception:
-        abort(500, description="Syntax Error")
+      return f(*args, **kwargs)
 
     return inner
 
